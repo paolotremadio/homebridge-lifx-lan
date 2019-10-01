@@ -12,18 +12,7 @@ class LifxDevice {
       mac: light.mac,
     };
 
-    this.autoDetectDevice();
-    setInterval(() => this.autoDetectDevice(), 10 * 60 * 1000);
-  }
-
-  async autoDetectDevice() {
-    try {
-      debug('Re-discovering devices');
-      await this.destroyDevice();
-      await this.detectDevice();
-    } catch (e) {
-      this.log(`Error in discovering device: ${e}`);
-    }
+    this.detectDevice();
   }
 
   async detectDevice() {
@@ -36,22 +25,7 @@ class LifxDevice {
     }
   }
 
-  async destroyDevice() {
-    if (this.device) {
-      debug('Destroying device...');
-      await Lifx.destroy();
-      this.device = null;
-      debug('Device destroyed');
-    }
-  }
-
   async getLightStatus() {
-    try {
-      await this.detectDevice();
-    } catch (e) {
-      this.log(`Cannot detect device -- ${e.toString()}`);
-    }
-
     try {
       const { power } = await this.device.lightGet();
       return power === 1;
@@ -61,12 +35,6 @@ class LifxDevice {
   }
 
   async setLightStatus(on) {
-    try {
-      await this.detectDevice();
-    } catch (e) {
-      this.log(`Cannot detect device -- ${e.toString()}`);
-    }
-
     if (!on) {
       return this.device.turnOff({ duration: 500 });
     }
